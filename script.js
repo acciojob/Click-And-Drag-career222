@@ -17,7 +17,7 @@ items.forEach((item) => {
     offsetX = e.clientX - itemRect.left;
     offsetY = e.clientY - itemRect.top;
 
-    // Change grid item to freely movable item
+    
     item.style.position = "absolute";
 
     item.style.left =
