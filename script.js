@@ -1,40 +1,74 @@
-// Your code here.
-const slider = document.querySelector(".items");
+// Get the container and all items
+const container = document.querySelector(".items");
+const items = document.querySelectorAll(".item");
 
-let isDown = false;
-let startX;
-let scrollLeft;
+let selectedItem = null;
+let offsetX = 0;
+let offsetY = 0;
 
-slider.addEventListener("mousedown", (e) => {
-  isDown = true;
+// Make every item draggable
+items.forEach((item) => {
+  item.addEventListener("mousedown", function (e) {
+    selectedItem = item;
 
-  slider.classList.add("active");
+    const itemRect = item.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
 
-  startX = e.pageX - slider.offsetLeft;
+    // Remember where inside the item the mouse was clicked
+    offsetX = e.clientX - itemRect.left;
+    offsetY = e.clientY - itemRect.top;
 
-  scrollLeft = slider.scrollLeft;
+    // Change item from grid position to absolute position
+    item.style.position = "absolute";
+
+    item.style.left =
+      itemRect.left - containerRect.left + "px";
+
+    item.style.top =
+      itemRect.top - containerRect.top + "px";
+
+    item.style.cursor = "grabbing";
+    item.style.zIndex = "1000";
+
+    container.classList.add("active");
+
+    e.preventDefault();
+  });
 });
 
-slider.addEventListener("mouseleave", () => {
-  isDown = false;
+// Move selected item
+document.addEventListener("mousemove", function (e) {
+  if (!selectedItem) return;
 
-  slider.classList.remove("active");
+  const containerRect = container.getBoundingClientRect();
+
+  let newLeft =
+    e.clientX - containerRect.left - offsetX;
+
+  let newTop =
+    e.clientY - containerRect.top - offsetY;
+
+  // Keep item inside container
+  const maxLeft =
+    container.clientWidth - selectedItem.offsetWidth;
+
+  const maxTop =
+    container.clientHeight - selectedItem.offsetHeight;
+
+  newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+  newTop = Math.max(0, Math.min(newTop, maxTop));
+
+  selectedItem.style.left = newLeft + "px";
+  selectedItem.style.top = newTop + "px";
 });
 
-slider.addEventListener("mouseup", () => {
-  isDown = false;
+// Drop item
+document.addEventListener("mouseup", function () {
+  if (selectedItem) {
+    selectedItem.style.cursor = "grab";
+    selectedItem.style.zIndex = "";
+  }
 
-  slider.classList.remove("active");
-});
-
-slider.addEventListener("mousemove", (e) => {
-  if (!isDown) return;
-
-  e.preventDefault();
-
-  const x = e.pageX - slider.offsetLeft;
-
-  const walk = (x - startX) * 2;
-
-  slider.scrollLeft = scrollLeft - walk;
+  selectedItem = null;
+  container.classList.remove("active");
 });
